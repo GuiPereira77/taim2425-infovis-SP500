@@ -37,7 +37,7 @@ def generate_chart(mode):
             values='value',
             color='value',
             hover_data=['shares'],
-            color_continuous_scale='RdYlGn',
+            color_continuous_scale='RdBu',
         )
     elif mode == 'shareholder_sector':
         # Path: sp500 > Shareholder Name > Sector
@@ -47,7 +47,7 @@ def generate_chart(mode):
             values='value',
             color='value',
             hover_data=['shares'],
-            color_continuous_scale='RdYlGn',
+            color_continuous_scale='RdBu',
         )
     elif mode == 'sector':
         # Path: sp500 > Sector > Symbol
@@ -57,7 +57,7 @@ def generate_chart(mode):
             values='value',
             color='value',
             hover_data=['shares'],
-            color_continuous_scale='RdYlGn',
+            color_continuous_scale='RdBu',
         )
     elif mode == 'industry':
         # Path: sp500 > Industry > Symbol
@@ -67,7 +67,7 @@ def generate_chart(mode):
             values='value',
             color='value',
             hover_data=['shares'],
-            color_continuous_scale='RdYlGn',
+            color_continuous_scale='RdBu',
         )
     elif mode == 'country':
         # Path: sp500 > Country > Symbol
@@ -77,7 +77,7 @@ def generate_chart(mode):
             values='value',
             color='value',
             hover_data=['shares'],
-            color_continuous_scale='RdYlGn',
+            color_continuous_scale='RdBu',
         )
 
 
