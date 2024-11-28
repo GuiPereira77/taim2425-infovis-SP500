@@ -8,16 +8,18 @@ merged_df = pd.read_csv('data/merged_sp500_data.csv')
 
 app.layout = html.Div([
     html.H4("Interactive TreeMap with Dash"),
-    html.P("Values grouped by:"),
-        dcc.Dropdown(
+    dcc.Dropdown(
         id='filter-options',
         value='shareholder_company',
         options=[
-            {'label': 'Shareholders by Company', 'value': 'shareholder_company'},
-            {'label': 'Shareholders by Sector', 'value': 'shareholder_sector'},
-            {'label': 'Sector', 'value': 'sector'},
-            {'label': 'Industry', 'value': 'industry'},
-            {'label': 'Country', 'value': 'country'}
+            # Holder -> Sector -> Industry -> Company
+            {'label': 'Holder > Sector > Industry > Company', 'value': 'shareholder_sector'},
+            # Holder -> Company
+            {'label': 'Holder > Company', 'value': 'shareholder_company'},
+            # Sector -> Holder 
+            {'label': 'Sector > Holder', 'value': 'sector'},
+            # Company -> Holder
+            {'label': 'Company > Holder', 'value': 'company'},
         ],
         clearable=False
     ),
@@ -29,60 +31,64 @@ app.layout = html.Div([
     Input("filter-options", "value"))
 
 def generate_chart(mode):
-    if mode == 'shareholder_company':
-        # Path: sp500 > Shareholder Name > Company
+    if mode == 'shareholder_sector':
+        # Path: sp500 -> Holder -> Sector -> Industry -> Company
+        fig = px.treemap(
+            merged_df,
+            path=[px.Constant("sp500"), 'name', 'sector', 'industry', 'symbol'],
+            values='value',
+            color='value',
+            color_discrete_map={"sp500": "lightgray"},
+            color_continuous_scale='RdBu',
+            maxdepth=3
+        )
+    elif mode == 'shareholder_company':
+        # Path: sp500 -> Holder -> Company
         fig = px.treemap(
             merged_df,
             path=[px.Constant("sp500"), 'name', 'symbol'],
             values='value',
             color='value',
-            hover_data=['shares'],
+            color_discrete_map={"sp500": "lightgray"},
             color_continuous_scale='RdBu',
-        )
-    elif mode == 'shareholder_sector':
-        # Path: sp500 > Shareholder Name > Sector
-        fig = px.treemap(
-            merged_df,
-            path=[px.Constant("sp500"), 'name', 'sector', 'symbol'],
-            values='value',
-            color='value',
-            hover_data=['shares'],
-            color_continuous_scale='RdBu',
+            maxdepth=3
         )
     elif mode == 'sector':
-        # Path: sp500 > Sector > Symbol
+        # Path: sp500 -> Sector -> Holder
         fig = px.treemap(
             merged_df,
-            path=[px.Constant("sp500"), 'sector', 'symbol'],
+            path=[px.Constant("sp500"), 'sector', 'name'],
             values='value',
             color='value',
-            hover_data=['shares'],
+            color_discrete_map={"sp500": "lightgray"},
             color_continuous_scale='RdBu',
         )
-    elif mode == 'industry':
-        # Path: sp500 > Industry > Symbol
+    else:
+        # Path: sp500 -> Company -> Holder
         fig = px.treemap(
             merged_df,
-            path=[px.Constant("sp500"), 'industry', 'symbol'],
+            path=[px.Constant("sp500"), 'symbol', 'name'],
             values='value',
             color='value',
-            hover_data=['shares'],
-            color_continuous_scale='RdBu',
-        )
-    elif mode == 'country':
-        # Path: sp500 > Country > Symbol
-        fig = px.treemap(
-            merged_df,
-            path=[px.Constant("sp500"), 'country', 'symbol'],
-            values='value',
-            color='value',
-            hover_data=['shares'],
+            color_discrete_map={"sp500": "lightgray"},
             color_continuous_scale='RdBu',
         )
 
-
-    fig.update_traces(root_color="lightgray")
-    fig.update_traces(marker_line_width = 0)
+    fig.update_traces(
+        marker_line_width = 0,
+        hovertemplate=(
+            '<b>%{label}</b><br>' +
+            'Path: %{id}<br>' +
+            'Value: %{value:,.2f}$<extra></extra>'
+        ),
+        hoverlabel=dict(
+            bgcolor="lightgray",  # Set background color
+            font_size=14,         # Customize font size
+            font_color="black",   # Set font color
+            bordercolor="black"    # Set border color
+        ),
+    )
+    
     fig.update_layout(
         margin = dict(t=50, l=25, r=25, b=25),
         paper_bgcolor="lightgray",    # Set the entire figure background color

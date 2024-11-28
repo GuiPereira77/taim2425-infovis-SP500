@@ -35,13 +35,13 @@ merged_df = pd.merge(sp500_top10_holders, sp500, on=['symbol', 'isin'])
 # Function to convert values with 'B' and 'M' suffixes to numeric
 def convert_shares(value):
     if 'B' in value:
-        value = float(value.replace('B', '')) * 1e9
+        return float(value.replace('B', '')) * 1e9
     elif 'M' in value:
-        value = float(value.replace('M', '')) * 1e6
+        return float(value.replace('M', '')) * 1e6
     elif 'k' in value:
-        value = float(value.replace('k', '')) * 1e3
+        return float(value.replace('k', '')) * 1e3
     else:
-        value = float(value)
+        return float(value)
     return '${:,.2f}'.format(value)
 
 # Apply the function to the 'shares' column
