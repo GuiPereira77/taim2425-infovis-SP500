@@ -1,6 +1,8 @@
 import pandas as pd
 import plotly.express as px
+import numpy as np
 from dash import Dash, dcc, html, Input, Output
+
 
 app = Dash(__name__)
 merged_df = pd.read_csv('data/merged_sp500_data.csv')
@@ -22,8 +24,10 @@ app.layout = html.Div([
         ],
         clearable=False
     ),
-    dcc.Graph(id="graph", style={'height': '800px'}),
+    dcc.Graph(id="graph", style={'height': '700px'}),
 ])
+
+merged_df['log_value'] = np.log10(merged_df['value'])
 
 @app.callback(
     Output("graph", "figure"),
@@ -36,10 +40,11 @@ def generate_chart(mode):
             merged_df,
             path=[px.Constant("sp500"), 'name', 'sector', 'industry', 'symbol'],
             values='value',
-            color='value',
+            color='log_value',
             color_discrete_map={"sp500": "lightgray"},
             color_continuous_scale='RdBu',
-            maxdepth=3
+            maxdepth=3,
+            range_color=[9, 11.3]  # Adjust range for log scale (1B to 1T corresponds to log10 values 9-12)
         )
     elif mode == 'shareholder_company':
         # Path: sp500 -> Holder -> Company
@@ -47,10 +52,11 @@ def generate_chart(mode):
             merged_df,
             path=[px.Constant("sp500"), 'name', 'symbol'],
             values='value',
-            color='value',
+            color='log_value',
             color_discrete_map={"sp500": "lightgray"},
             color_continuous_scale='RdBu',
-            maxdepth=3
+            maxdepth=3,
+            range_color=[9, 11.3]  # Adjust range for log scale (1B to 1T corresponds to log10 values 9-12)
         )
     elif mode == 'sector':
         # Path: sp500 -> Sector -> Holder
@@ -58,9 +64,10 @@ def generate_chart(mode):
             merged_df,
             path=[px.Constant("sp500"), 'sector', 'name'],
             values='value',
-            color='value',
+            color='log_value',
             color_discrete_map={"sp500": "lightgray"},
             color_continuous_scale='RdBu',
+            range_color=[9, 11.3]  # Adjust range for log scale (1B to 1T corresponds to log10 values 9-12)
         )
     else:
         # Path: sp500 -> Company -> Holder
@@ -68,9 +75,10 @@ def generate_chart(mode):
             merged_df,
             path=[px.Constant("sp500"), 'symbol', 'name'],
             values='value',
-            color='value',
+            color='log_value',
             color_discrete_map={"sp500": "lightgray"},
             color_continuous_scale='RdBu',
+            range_color=[9, 11.3]  # Adjust range for log scale (1B to 1T corresponds to log10 values 9-12)
         )
 
     fig.update_traces(
@@ -89,6 +97,11 @@ def generate_chart(mode):
     )
     
     fig.update_layout(
+        coloraxis_colorbar=dict(
+            title="Value",
+            tickvals=[9, 9.3, 9.6, 10, 10.3, 10.6, 11, 11.3],
+            ticktext=["1B", "2B", "4B", "10B", "20B", "40B", "100B", "200B"]
+        ),
         margin = dict(t=50, l=25, r=25, b=25),
         paper_bgcolor="lightgray",    # Set the entire figure background color
         plot_bgcolor="lightgray"
